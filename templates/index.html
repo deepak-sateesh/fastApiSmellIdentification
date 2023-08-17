@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FastAPI Input</title>
+</head>
+<body>
+    <h1>Enter the RULE:</h1>
+    <form action="/" method="post">
+        <input type="text" name="input_text">
+        <input type="submit" value="Submit">
+    </form>
+    </br>
+    <h1>Upload the files:</h1>
+    <form action="/process_plantuml" method="post" enctype="multipart/form-data">
+        <input type="file" name="files" multiple>
+        <input type="submit" value="Upload">
+    </form>
+
+
+</body>
+</html>
