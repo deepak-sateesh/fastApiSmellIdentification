@@ -1,0 +1,7 @@
+
+@startuml
+class Dummy'And'Dum2 {
+  String data1, data2
+  void appendData1'And'Data2()
+}
+@enduml

@@ -3,12 +3,18 @@ from typing import List
 from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+import os
+import io
+import PIL.Image as Image
+from plantuml import PlantUML
+from fastapi.staticfiles import StaticFiles
 
-
+from os.path import abspath
 from rules.rule_checker import ruleCheck, extract_class_names_and_parameters
 import spacy
 app = FastAPI()
-
+IMAGEDIR = "Images/"
+app.mount("/Images", StaticFiles(directory="Images"), name="Images")
 
 '''@app.get("/")
 async def root():
@@ -69,7 +75,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
     
     #print(t.split(" "))
     return templates.TemplateResponse(
-        "result.o", {"request": request, "input_text": input_text}
+        "result.html", {"request": request, "input_text": input_text}
     )
 
 @app.post("/process_plantuml")
@@ -86,9 +92,22 @@ async def process_plantuml(request: Request, files: List[UploadFile] = File(...)
 
     output_html = "<h1>Processing Results</h1>"
 
-
+    saved_images=[]
     for file in files:
         output_html += f"<p>Processed: {file.filename}</p>"
+        server = PlantUML(url='http://www.plantuml.com/plantuml/img/',
+                          basic_auth={},
+                          form_auth={}, http_opts={}, request_opts={})
+        #print(file.file.read().decode("utf-8"))
 
+        file_string=file.file.read().decode("utf-8")
 
-    return templates.TemplateResponse("output.html", {"request": request, "output_html": output_html})
+        s = server.processes(file_string)
+        image = Image.open(io.BytesIO(s))
+        image.save(f"{IMAGEDIR}{file.filename}->.png")
+
+        #saved_img=Image.open(file.filename+'->.png')
+        saved_images.append(file.filename+'->.png')
+    print(saved_images)
+
+    return templates.TemplateResponse("output.html", {"request": request, "output_html": output_html, "Images":saved_images})
