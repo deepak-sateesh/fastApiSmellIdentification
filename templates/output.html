@@ -4,7 +4,7 @@
     <title>FastAPI Result</title>
 </head>
 <body>
-    <h1>The rule which is input was:</h1>
+    <h1>These are UMLs which are input:</h1>
     <p>{{ output_html }}</p>
     <div class="col-12">
     {% for rs in Images %}
@@ -12,6 +12,14 @@
             <img width="500" src="{{ url_for('Images', path=rs) }}">
         </div>
     {% endfor %}
+    </div>
+    <br>
+    <div>
+        <h1>Enter the Rule:</h1>
+        <form action="/processRule" method="post">
+            <input type="text" name="input_text">
+            <input type="submit" value="Submit">
+        </form>
     </div>
 </body>
 </html>

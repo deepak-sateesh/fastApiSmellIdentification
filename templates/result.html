@@ -3,8 +3,13 @@
 <head>
     <title>FastAPI Result</title>
 </head>
-<body>
+<body><!--
     <h1>The rule which is input was:</h1>
     <p>{{ input_text }}</p>
+    -->
+    <h1>{{result}}</h1>
+    <form action="/back_button" method="get">
+            <input type="submit" value="Home">
+    </form>
 </body>
 </html>

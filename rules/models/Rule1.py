@@ -1,8 +1,11 @@
 import spacy
+import re
+
 
 # ElementsName  cannot have  “AND” in Class Diagram
 #elements name : list of [Class1_Name, ClassAndName,...]
-Elements_name=["Class1_Name", "Class_And_Name","ClassNameANDName"]
+#Elements_name=["Class1_Name", "Class_And_Name","ClassNameANDName"]
+
 ModalVerbs= ["Cannot","Can"]
 nlp = spacy.load("en_core_web_sm")
 '''Rule: 	Phrase
@@ -38,7 +41,8 @@ def parse_sentence(sentence):
 
 
 # print(t.split(" "))
-def checkRule1(sentence):
+def checkRule1(class_names,parameter_names,sentence):
+    Elements_names = class_names + parameter_names
     s = sentence
     s = s.split(" ")
     s = [x for x in s if x]
@@ -52,13 +56,23 @@ def checkRule1(sentence):
     print(ss)
     #parse_sentence(sentence)
     if (ss[0][1] == "Noun"):
-        if (ss[0][0] in Elements_name):
-            if (ss[1][1] == "Modal Verb"):
-                if (ss[2][1] == "Verb"):
-                    if (ss[3][1] == "Noun"):
-                        if (ss[4][1] == "In"):
-                            if (ss[5][1] == "Diagram"):
-                                return "True"
+        prohibitedWord = ((ss[3][0])[1:-1]).lower()
+
+
+        print(Elements_names)
+        for e in Elements_names:
+            e = e.lower()
+            print("efind")
+            print(e.find(prohibitedWord))
+            if e.find(prohibitedWord)>0:
+                return "False"
+
+        if (ss[1][1] == "Modal Verb"):
+            if (ss[2][1] == "Verb"):
+                if (ss[3][1] == "Noun"):
+                    if (ss[4][1] == "In"):
+                        if (ss[5][1] == "Diagram"):
+                            return "True"
     return "False"
     '''s=sentence
     parse_sentence(sentence)

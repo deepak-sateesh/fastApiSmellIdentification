@@ -1,0 +1,10 @@
+
+    class StudentAndTeacher {
+    NameAndN
+    }
+    Student "0..*" - "1..*" Course
+    (Student, Course) .. Enrollment
+    class Enrollment {
+    drop()
+    cancel()
+    }
