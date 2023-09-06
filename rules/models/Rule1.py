@@ -42,7 +42,7 @@ def parse_sentence(sentence):
 
 # print(t.split(" "))
 def checkRule1(class_names,parameter_names,sentence):
-    Elements_names = class_names + parameter_names
+    Elements_names = list(class_names) + parameter_names
     s = sentence
     s = s.split(" ")
     s = [x for x in s if x]
@@ -56,15 +56,16 @@ def checkRule1(class_names,parameter_names,sentence):
     print(ss)
     #parse_sentence(sentence)
     if (ss[0][1] == "Noun"):
+        #prohibitedWord = ((ss[3][0])[1:-1]).lower()
         prohibitedWord = ((ss[3][0])[1:-1]).lower()
-
+        print("prohibitedWord: "+prohibitedWord)
 
         print(Elements_names)
         for e in Elements_names:
             e = e.lower()
             print("efind")
             print(e.find(prohibitedWord))
-            if e.find(prohibitedWord)>0:
+            if e.find(prohibitedWord)>=0:
                 return "False"
 
         if (ss[1][1] == "Modal Verb"):
@@ -95,3 +96,37 @@ def checkRule1(class_names,parameter_names,sentence):
                             if (s[5][1] == "Diagram"):
                                 return "True"
     return "False"'''
+
+
+def find_cyclic_dependency(lst):
+    graph = {}
+    for item in lst:
+        parent, child = item
+        if parent not in graph:
+            graph[parent] = []
+        graph[parent].append(child)
+
+    visited = set()
+    stack = set()
+
+    def dfs(node):
+        visited.add(node)
+        stack.add(node)
+
+        if node in graph:
+            for neighbor in graph[node]:
+                if neighbor not in visited:
+                    if dfs(neighbor):
+                        return True
+                elif neighbor in stack:
+                    return True
+
+        stack.remove(node)
+        return False
+
+    for node in graph:
+        if node not in visited:
+            if dfs(node):
+                return True
+
+    return False
