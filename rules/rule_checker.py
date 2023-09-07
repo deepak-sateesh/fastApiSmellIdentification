@@ -2,9 +2,11 @@ from .models.Rule1 import  find_cyclic_dependency, check_for_prohibited_words
 import re
 
 overall_rule_result = True
-known_nouns = []
+known_nouns = ["cyclic", ]
 def ruleCheck(c_names, p_names,relations, Rule):
     global overall_rule_result
+    if ("-->" in relations.keys()):
+        lst = relations["-->"]
     # print("Before Check Rule 1")
     #Rule can be a phrase or if condition then rule
     r = Rule
@@ -22,7 +24,8 @@ def ruleCheck(c_names, p_names,relations, Rule):
                 Noun1 = c[2]
                 if(Noun1 in known_nouns):
                     #call that respective function
-                    overall_rule_result = overall_rule_result and True
+                    if(Noun1=="cyclic"):
+                        overall_rule_result = overall_rule_result and find_cyclic_dependency(lst)
                 else:
                     i = c.index("in")
                     if not i:
@@ -42,16 +45,21 @@ def ruleCheck(c_names, p_names,relations, Rule):
                     overall_rule_result = not(overall_rule_result and ruleCheck(c_names, p_names,relations," ".join(rule_noun)))
             #in between nouns and diagram check is pending
 
+
         print("next_rule:", next_rule)
         next_rule_result = ruleCheck(c_names, p_names, relations, " ".join(next_rule))
         overall_rule_result = overall_rule_result and next_rule_result
+
+        #then part
+
+
 
     else:
         phrase = Rule
         print("Phrase:", phrase)
         print("before overall_rule_result: ",overall_rule_result)
-        if ("-->" in relations.keys()):
-            lst = relations["-->"]
+
+
         if ("cannot" in phrase and "\"" in phrase):
             print("cannot")
             overall_rule_result =  check_for_prohibited_words(c_names, p_names, phrase)
@@ -65,6 +73,8 @@ def ruleCheck(c_names, p_names,relations, Rule):
         elif ("cyclic" in phrase):
             print("cyclic")
             overall_rule_result = find_cyclic_dependency(lst)
+        else:
+            print("No match")
         print("After overall_rule_result: ", overall_rule_result)
     return overall_rule_result
     """result = checkRule1(c_names, p_names, Rule)
