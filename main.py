@@ -75,7 +75,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
 
     r = ruleCheck(class_names, parameter_names, relations ,input_text)
     # print("Result of rule: " + input_text + " => " + r)
-    if(r):
+    if r:
         result = "Result of rule: " + input_text + " => " + "True"
     else:
         result = "Result of rule: " + input_text + " => " + "False"

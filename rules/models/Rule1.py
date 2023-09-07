@@ -63,18 +63,18 @@ def checkRule1(class_names,parameter_names,sentence):
         print(Elements_names)
         for e in Elements_names:
             e = e.lower()
-            print("efind")
-            print(e.find(prohibitedWord))
+            #print("efind")
+            #print(e.find(prohibitedWord))
             if e.find(prohibitedWord)>=0:
-                return "False"
+                return False
 
         if (ss[1][1] == "Modal Verb"):
             if (ss[2][1] == "Verb"):
                 if (ss[3][1] == "Noun"):
                     if (ss[4][1] == "In"):
                         if (ss[5][1] == "Diagram"):
-                            return "True"
-    return "False"
+                            return True
+    return False
     '''s=sentence
     parse_sentence(sentence)
 
