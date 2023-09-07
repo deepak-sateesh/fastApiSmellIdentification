@@ -41,7 +41,7 @@ def parse_sentence(sentence):
 
 
 # print(t.split(" "))
-def checkRule1(class_names,parameter_names,sentence):
+def check_for_prohibited_words(class_names,parameter_names,sentence):
     Elements_names = list(class_names) + parameter_names
     s = sentence
     s = s.split(" ")
@@ -65,7 +65,7 @@ def checkRule1(class_names,parameter_names,sentence):
             e = e.lower()
             #print("efind")
             #print(e.find(prohibitedWord))
-            if e.find(prohibitedWord)>=0:
+            if e.find(prohibitedWord) >= 0:
                 return False
 
         if (ss[1][1] == "Modal Verb"):

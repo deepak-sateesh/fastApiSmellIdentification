@@ -1,4 +1,4 @@
-from .models.Rule1 import checkRule1, find_cyclic_dependency
+from .models.Rule1 import  find_cyclic_dependency, check_for_prohibited_words
 import re
 
 overall_rule_result = True
@@ -52,10 +52,19 @@ def ruleCheck(c_names, p_names,relations, Rule):
         print("before overall_rule_result: ",overall_rule_result)
         if ("-->" in relations.keys()):
             lst = relations["-->"]
-        if("not" in phrase and "cyclic" in phrase):
-            overall_rule_result=not(find_cyclic_dependency(lst))
+        if ("cannot" in phrase and "\"" in phrase):
+            print("cannot")
+            overall_rule_result =  check_for_prohibited_words(c_names, p_names, phrase)
+        elif ("\"" in phrase):
+            print("can")
+            overall_rule_result = not(check_for_prohibited_words(c_names, p_names, phrase))
+
+        elif("not" in phrase and "cyclic" in phrase):
+            print("not  cyclic")
+            overall_rule_result = not(find_cyclic_dependency(lst))
         elif ("cyclic" in phrase):
-            overall_rule_result =  find_cyclic_dependency(lst)
+            print("cyclic")
+            overall_rule_result = find_cyclic_dependency(lst)
         print("After overall_rule_result: ", overall_rule_result)
     return overall_rule_result
     """result = checkRule1(c_names, p_names, Rule)
