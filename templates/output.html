@@ -7,9 +7,9 @@
     <h1>These are UMLs which are input:</h1>
     <p>{{ output_html }}</p>
     <div class="col-12">
-    {% for rs in Images %}
+    {% for rs in Input_Images %}
         <div style="padding:20px;float:left;">
-            <img width="500" src="{{ url_for('Images', path=rs) }}">
+            <img width="500" src="{{ url_for('Input_Images', path=rs) }}">
         </div>
     {% endfor %}
     </div>

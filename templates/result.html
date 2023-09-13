@@ -8,6 +8,14 @@
     <p>{{ input_text }}</p>
     -->
     <h1>{{result}}</h1>
+
+    <div class="col-12">
+        {% for rs in Output_Images %}
+            <div style="padding:20px;float:left;">
+                <img width="500" src="{{ url_for('Output_Images', path=rs) }}">
+            </div>
+        {% endfor %}
+    </div>
     <form action="/back_button" method="get">
             <input type="submit" value="Home">
     </form>

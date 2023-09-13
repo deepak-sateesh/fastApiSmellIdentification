@@ -1,11 +1,10 @@
-from .models.Rules_Activity_Diagram_Start_and_End_Event_check import find_start_event, find_end_event
 from .models.Rules_Cyclic_Dependency import find_cyclic_dependency
 from .models.Rules_Prohibited_Words import   check_for_prohibited_words
-
+import re
 
 overall_rule_result = True
-known_nouns = ["cyclic", "infinite_loop", "start_activity", "end_activity" ]
-def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
+known_nouns = ["cyclic", "infinite_loop" ]
+def ruleCheck(c_names, p_names,relations, Rule):
     global overall_rule_result
     if ("-->" in relations.keys()):
         lst = relations["-->"]
@@ -75,22 +74,9 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
         elif ("cyclic" in phrase):
             print("cyclic")
             overall_rule_result = find_cyclic_dependency(lst)
-
-
-        elif ("start_event" in phrase and "Activity_diagram" in phrase and "should not" in phrase):
-            overall_rule_result = not (find_start_event(activity_sequence))
-        elif ("start_event" in phrase and "Activity_diagram" in phrase and "should " in phrase):
-            overall_rule_result = find_start_event(activity_sequence)
-
-        elif ("end_event" in phrase and "Activity_diagram" in phrase and "should not" in phrase):
-            overall_rule_result = not(find_end_event(activity_sequence))
-        elif ("end_event" in phrase and "Activity_diagram" in phrase and "should" in phrase):
-            overall_rule_result = find_end_event(activity_sequence)
-
         else:
             print("No match")
         print("After overall_rule_result: ", overall_rule_result)
-
     return overall_rule_result
     """result = checkRule1(c_names, p_names, Rule)
     if("-->" in relations.keys()):

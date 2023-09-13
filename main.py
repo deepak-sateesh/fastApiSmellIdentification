@@ -1,26 +1,24 @@
+import io, re
 from typing import List
 
+import PIL.Image as Image
+import spacy
 from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-import os
-import io
-import PIL.Image as Image
-from plantuml import PlantUML
 from fastapi.staticfiles import StaticFiles
-
-from os.path import abspath
-
+from fastapi.templating import Jinja2Templates
+from plantuml import PlantUML
 from starlette.responses import RedirectResponse
 
-from rules.rule_checker import ruleCheck, class_diagram_extract_class_names_and_parameters_and_relations, \
-    sequence_diagram_extract_class_names_and_parameters_and_relations, \
-    activity_diagram_extract_class_names_and_parameters_and_relations
-import spacy
+from rules.rule_checker import ruleCheck
+from uml_diagram_information_extractor import class_diagram_extract_class_names_and_parameters_and_relations, \
+    activity_diagram_extract_activity_sequence, sequence_diagram_extract_messages_information
 
 app = FastAPI()
-IMAGEDIR = "Images/"
-app.mount("/Images", StaticFiles(directory="Images"), name="Images")
+IPIMAGEDIR = "Input_Images/"
+OPIMAGEDIR = "Output_Images/"
+app.mount("/Input_Images", StaticFiles(directory="Input_Images"), name="Input_Images")
+app.mount("/Output_Images", StaticFiles(directory="Output_Images"), name="Output_Images")
 
 '''@app.get("/")
 async def root():
@@ -38,10 +36,14 @@ async def add_rule(rule: str):
     return {"message": f"Hello {name}"}'''
 
 templates = Jinja2Templates(directory="templates")
-
+plant_uml_files = []
 class_names = []
 parameter_names = []
-relations = []
+relations = {}
+activity_sequence = []
+messages = {}
+
+uploaded_file_strings=[]
 
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
@@ -50,31 +52,30 @@ async def read_item(request: Request):
 
 @app.post("/processRule", response_class=HTMLResponse)
 async def read_item(request: Request, input_text: str = Form(...)):
-    global class_names, parameter_names, relations
+    global class_names, parameter_names, relations, activity_sequence, messages, plant_uml_files, uploaded_file_strings
     t = input_text
     nlp = spacy.load("en_core_web_sm")
-    # Example usage
-    plantuml_representation = '''
-    class Student {
-    Name
-    }
-    Student "0..*" - "1..*" Course
-    (Student, Course) .. Enrollment
-    class Enrollment {
-    drop()
-    cancel()
-    }
-    '''
-    '''class_names, parameter_names = extract_class_names_and_parameters(plantuml_representation)
-    print("Class names:", class_names)
-    print("Parameter names:", parameter_names)'''
-    # global class_names, parameter_names
-    # r = ruleCheck(t)
 
-    # print("Result of rule: "+ t+ " => "+ r)
-
-    r = ruleCheck(class_names, parameter_names, relations ,input_text)
+    r = ruleCheck(class_names, parameter_names, relations, activity_sequence, messages, input_text)
     # print("Result of rule: " + input_text + " => " + r)
+    output_html = ""
+    saved_images = []
+    for file in uploaded_file_strings:
+        server = PlantUML(url='http://www.plantuml.com/plantuml/img/',
+                          basic_auth={},
+                          form_auth={}, http_opts={}, request_opts={})
+        # print(file.file.read().decode("utf-8"))
+
+        file_string = file[1]
+        diagram_type = identify_diagram_type(file_string)
+
+        s = server.processes(file_string)
+        image = Image.open(io.BytesIO(s))
+        image.save(f"{OPIMAGEDIR}{file[0]}->.png")
+
+        # saved_img=Image.open(file.filename+'->.png')
+        saved_images.append(file[0] + '->.png')
+
     if r:
         result = "Result of rule: " + input_text + " => " + "True"
     else:
@@ -94,24 +95,81 @@ async def read_item(request: Request, input_text: str = Form(...)):
 
     # print(t.split(" "))
     return templates.TemplateResponse(
-        "result.html", {"request": request, "input_text": input_text, "result": result}
+        "result.html", {"request": request, "input_text": input_text, "result": result, "Output_Images": saved_images}
     )
 
 
 def identify_diagram_type(plantuml_code):
-    if "class" in plantuml_code:
+    # Regular expression patterns
+    sequence_diagram_start_pattern = re.compile(r'@startuml\s*')
+    sequence_diagram_end_pattern = re.compile(r'@enduml\s*')
+    sequence_message_pattern = re.compile(r'\w+\s*(->|--|<--)\s*\w+:.*')
+
+    # Check for sequence diagram markers and messages
+    contains_start_marker = sequence_diagram_start_pattern.search(plantuml_code)
+    contains_end_marker = sequence_diagram_end_pattern.search(plantuml_code)
+    contains_sequence_messages = sequence_message_pattern.search(plantuml_code)
+
+    if contains_start_marker and contains_end_marker and contains_sequence_messages:
+        return "Sequence Diagram"
+
+    # Regular expression patterns
+    activity_start_pattern = re.compile(r':.*[\s]*.*;')
+    decision_pattern = re.compile(r'if\s*\(.+?\)\s*then\s*\(.+?\)')
+    fork_join_pattern = re.compile(r'(fork|join)')
+    flow_arrow_pattern = re.compile(r'->|--|<--')
+
+    # Check for activity diagram elements
+    contains_activities = activity_start_pattern.search(plantuml_code)
+    contains_decision = decision_pattern.search(plantuml_code)
+    contains_fork_join = fork_join_pattern.search(plantuml_code)
+    contains_flow_arrows = flow_arrow_pattern.search(plantuml_code)
+
+    if contains_activities or contains_decision or contains_fork_join or contains_flow_arrows:
+        return "Activity Diagram"
+
+    # Sample PlantUML class diagram code
+    plantuml_code = """
+    @startuml
+    class Class1 {
+      + attribute1: type
+      - attribute2: type
+      + method1(): returnType
+      - method2(param: type): returnType
+    }
+    Class1 --|> Class2
+    @enduml
+    """
+
+    # Regular expression patterns
+    class_declaration_pattern = re.compile(r'class\s+\w+\s*\{')
+    relationship_pattern = re.compile(r'--|<--|\.\.|<\|')
+    attribute_method_pattern = re.compile(r'[-+]\s+\w+\(.*\):.*')
+
+    # Check for class diagram elements
+    contains_class_declaration = class_declaration_pattern.search(plantuml_code)
+    contains_relationships = relationship_pattern.search(plantuml_code)
+    contains_attributes_methods = attribute_method_pattern.search(plantuml_code)
+
+    if contains_class_declaration or contains_relationships or contains_attributes_methods:
+        return "Class Diagram"
+
+    """ if "class" in plantuml_code:
         return "Class Diagram"
     elif "participant" in plantuml_code:
         return "Sequence Diagram"
     elif any(keyword in plantuml_code for keyword in ["start", "end", "if", "while"]):
         return "Activity Diagram"
     else:
-        return "Unknown Diagram"
+        return "Unknown Diagram"""
+
+    return "Unknown Diagram"""
 
 
 @app.post("/process_plantuml")
 async def process_plantuml(request: Request, files: List[UploadFile] = File(...)):
-    global class_names, parameter_names, relations
+    global class_names, parameter_names, relations, activity_sequence, messages, plant_uml_files, uploaded_file_strings
+    plant_uml_files = files
     class_names = []
     parameter_names = []
     # Process the PlantUML files here
@@ -131,32 +189,41 @@ async def process_plantuml(request: Request, files: List[UploadFile] = File(...)
         # print(file.file.read().decode("utf-8"))
 
         file_string = file.file.read().decode("utf-8")
+        uploaded_file_strings.append((file.filename,file_string))
         diagram_type = identify_diagram_type(file_string)
         if diagram_type == "Class Diagram":
             print("Class diagram")
-            class_names, parameter_names, relations = class_diagram_extract_class_names_and_parameters_and_relations(file_string)
+            class_names, parameter_names, relations = class_diagram_extract_class_names_and_parameters_and_relations(
+                file_string)
             print("Class names:", class_names)
             print("Parameter names:", parameter_names)
             print("Relations :", relations)
 
         elif diagram_type == "Sequence Diagram":
-            #class_names, parameter_names, relations = sequence_diagram_extract_class_names_and_parameters_and_relations(file_string)
+            # class_names, parameter_names, relations = sequence_diagram_extract_class_names_and_parameters_and_relations(file_string)
             print("Sequence diagram")
+            messages = sequence_diagram_extract_messages_information(file_string)
+            # Print the stored messages
+            for message in messages:
+                print(f"{message['sender']} -> {message['receiver']}: {message['message']}")
 
         elif diagram_type == "Activity Diagram":
-            #class_names, parameter_names, relations = activity_diagram_extract_class_names_and_parameters_and_relations(file_string)
+            activity_sequence = activity_diagram_extract_activity_sequence(file_string)
             print("Activity diagram")
+            print("Activity sequence: ", activity_sequence)
 
         s = server.processes(file_string)
         image = Image.open(io.BytesIO(s))
-        image.save(f"{IMAGEDIR}{file.filename}->.png")
+        image.save(f"{IPIMAGEDIR}{file.filename}->.png")
 
         # saved_img=Image.open(file.filename+'->.png')
         saved_images.append(file.filename + '->.png')
+        #file.file.close()
+
     # print(saved_images)
 
     return templates.TemplateResponse("output.html",
-                                      {"request": request, "output_html": output_html, "Images": saved_images})
+                                      {"request": request, "output_html": output_html, "Input_Images": saved_images})
 
 
 @app.get("/back_button")
