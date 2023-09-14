@@ -5,6 +5,8 @@
     Student "0..*" - "1..*" Course
     (Student, Course) .. Enrollment
     class Enrollment {
+     + attributeAnd1: type 
+    - attribute2: type
     drop()
     cancel()
     }

@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 from plantuml import PlantUML
 from starlette.responses import RedirectResponse
 
+from map_file_and_rule_results import map_files_to_results
 from rules.rule_checker import ruleCheck
 from uml_diagram_information_extractor import class_diagram_extract_class_names_and_parameters_and_relations, \
     activity_diagram_extract_activity_sequence, sequence_diagram_extract_messages_information
@@ -43,9 +44,9 @@ relations = {}
 activity_sequence = []
 messages = {}
 
-uploaded_file_strings=[]
+uploaded_file_strings = []
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class = HTMLResponse)
 async def read_item(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
@@ -57,10 +58,15 @@ async def read_item(request: Request, input_text: str = Form(...)):
     nlp = spacy.load("en_core_web_sm")
 
     r = ruleCheck(class_names, parameter_names, relations, activity_sequence, messages, input_text)
+    if r[0]:
+        result = "Result of rule: " + input_text + " => " + "True"
+    else:
+        result = "Result of rule: " + input_text + " => " + "False"
+    prohibited_words = r[1]
     # print("Result of rule: " + input_text + " => " + r)
     output_html = ""
     saved_images = []
-    for file in uploaded_file_strings:
+    """for file in uploaded_file_strings:
         server = PlantUML(url='http://www.plantuml.com/plantuml/img/',
                           basic_auth={},
                           form_auth={}, http_opts={}, request_opts={})
@@ -74,12 +80,8 @@ async def read_item(request: Request, input_text: str = Form(...)):
         image.save(f"{OPIMAGEDIR}{file[0]}->.png")
 
         # saved_img=Image.open(file.filename+'->.png')
-        saved_images.append(file[0] + '->.png')
-
-    if r:
-        result = "Result of rule: " + input_text + " => " + "True"
-    else:
-        result = "Result of rule: " + input_text + " => " + "False"
+        saved_images.append(file[0] + '->.png')"""
+    result_images = map_files_to_results(uploaded_file_strings, prohibited_words)
 
     def parse_sentence(sentence):
         # Process the sentence using spaCy
@@ -95,7 +97,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
 
     # print(t.split(" "))
     return templates.TemplateResponse(
-        "result.html", {"request": request, "input_text": input_text, "result": result, "Output_Images": saved_images}
+        "result.html", {"request": request, "input_text": input_text, "result": result, "Output_Images": result_images}
     )
 
 

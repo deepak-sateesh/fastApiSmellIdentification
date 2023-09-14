@@ -5,8 +5,9 @@ from .models.Rules_Prohibited_Words import   check_for_prohibited_words
 
 overall_rule_result = True
 known_nouns = ["cyclic", "infinite_loop", "start_activity", "end_activity" ]
+prohibited_words = set()
 def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
-    global overall_rule_result
+    global overall_rule_result, prohibited_words
     if ("-->" in relations.keys()):
         lst = relations["-->"]
     # print("Before Check Rule 1")
@@ -62,12 +63,16 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
         print("before overall_rule_result: ",overall_rule_result)
 
 
-        if ("cannot" in phrase and "\"" in phrase):
+        if ("cannot" in phrase and ("\"" in phrase or '”' in phrase)):
             print("cannot")
-            overall_rule_result =  check_for_prohibited_words(c_names, p_names, phrase)
-        elif ("\"" in phrase):
+            r = check_for_prohibited_words(c_names, p_names, phrase)
+            overall_rule_result =r[0]
+            prohibited_words.add(r[1])
+        elif ("\"" in phrase or '”' in phrase):
             print("can")
-            overall_rule_result = not(check_for_prohibited_words(c_names, p_names, phrase))
+            r = check_for_prohibited_words(c_names, p_names, phrase)
+            overall_rule_result =not( r[0])
+            prohibited_words.add(r[1])
 
         elif("not" in phrase and "cyclic" in phrase):
             print("not  cyclic")
@@ -91,7 +96,7 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
             print("No match")
         print("After overall_rule_result: ", overall_rule_result)
 
-    return overall_rule_result
+    return [overall_rule_result, prohibited_words]
     """result = checkRule1(c_names, p_names, Rule)
     if("-->" in relations.keys()):
         lst = relations["-->"]

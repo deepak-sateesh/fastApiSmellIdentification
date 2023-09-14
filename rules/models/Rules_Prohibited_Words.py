@@ -58,7 +58,8 @@ def check_for_prohibited_words(class_names,parameter_names,sentence):
     if (ss[0][1] == "Noun"):
         #prohibitedWord = ((ss[3][0])[1:-1]).lower()
         prohibitedWord = ((ss[3][0])[1:-1]).lower()
-        print("prohibitedWord: "+prohibitedWord)
+        prohibitedWordAsItIs = (ss[3][0])[1:-1]
+        print("prohibitedWord: "+prohibitedWordAsItIs)
 
         print(Elements_names)
         for e in Elements_names:
@@ -66,15 +67,15 @@ def check_for_prohibited_words(class_names,parameter_names,sentence):
             #print("efind")
             #print(e.find(prohibitedWord))
             if e.find(prohibitedWord) >= 0:
-                return False
+                return [False, prohibitedWordAsItIs]
 
         if (ss[1][1] == "Modal Verb"):
             if (ss[2][1] == "Verb"):
                 if (ss[3][1] == "Noun"):
                     if (ss[4][1] == "In"):
                         if (ss[5][1] == "Diagram"):
-                            return True
-    return False
+                            return [True, prohibitedWord]
+    return [False, prohibitedWordAsItIs]
     '''s=sentence
     parse_sentence(sentence)
 
