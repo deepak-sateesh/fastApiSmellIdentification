@@ -17,7 +17,9 @@ def map_files_to_results(uploaded_file_strings, prohibited_words):
             #diagram_type = identify_diagram_type(file_string)
             for p in prohibited_words:
                 if(p in file_string):
-                    file_string = re.sub(f'({p})(?=.*:)', r'<font color="red">\1</font>', file_string)
+                    file_string = re.sub(f'({p})(?=.*:)', r'<font color="red">\1</font>', file_string) #attribute with type
+                    file_string = re.sub(f'({p})(?=.*\s*.*}}|\s*}})', r'<font color="red">\1</font>', file_string) #attribute without type
+                    file_string = re.sub(f'({p}.*\s*)(?=\s*{{)', r'\1 << (C,DarkRed) >> ', file_string) #class names
             s = server.processes(file_string)
             image = Image.open(io.BytesIO(s))
             image.save(f"{OPIMAGEDIR}{file[0]}->.png")
