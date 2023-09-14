@@ -1,7 +1,7 @@
 @startuml
 
 
-title Bracketed line style without label
+
 
 
 class foo

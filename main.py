@@ -63,6 +63,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
     else:
         result = "Result of rule: " + input_text + " => " + "False"
     prohibited_words = r[1]
+    cycles = r[2]
     # print("Result of rule: " + input_text + " => " + r)
     output_html = ""
     saved_images = []
@@ -81,7 +82,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
 
         # saved_img=Image.open(file.filename+'->.png')
         saved_images.append(file[0] + '->.png')"""
-    result_images = map_files_to_results(uploaded_file_strings, prohibited_words)
+    result_images = map_files_to_results(uploaded_file_strings, prohibited_words, cycles)
 
     def parse_sentence(sentence):
         # Process the sentence using spaCy
@@ -120,14 +121,18 @@ def identify_diagram_type(plantuml_code):
     decision_pattern = re.compile(r'if\s*\(.+?\)\s*then\s*\(.+?\)')
     fork_join_pattern = re.compile(r'(fork|join)')
     flow_arrow_pattern = re.compile(r'->|--|<--')
+    class_keyword_pattern = re.compile(r'.*class.*')
+
 
     # Check for activity diagram elements
     contains_activities = activity_start_pattern.search(plantuml_code)
     contains_decision = decision_pattern.search(plantuml_code)
     contains_fork_join = fork_join_pattern.search(plantuml_code)
     contains_flow_arrows = flow_arrow_pattern.search(plantuml_code)
+    contains_class_keyword = class_keyword_pattern.search(plantuml_code)
 
-    if contains_activities or contains_decision or contains_fork_join or contains_flow_arrows:
+
+    if not contains_class_keyword and (contains_activities or contains_decision or contains_fork_join or contains_flow_arrows):
         return "Activity Diagram"
 
     # Sample PlantUML class diagram code

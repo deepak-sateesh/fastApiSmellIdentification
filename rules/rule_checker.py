@@ -6,6 +6,7 @@ from .models.Rules_Prohibited_Words import   check_for_prohibited_words
 overall_rule_result = True
 known_nouns = ["cyclic", "infinite_loop", "start_activity", "end_activity" ]
 prohibited_words = set()
+cycles = []
 def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
     global overall_rule_result, prohibited_words
     if ("-->" in relations.keys()):
@@ -28,7 +29,9 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
                 if(Noun1 in known_nouns):
                     #call that respective function
                     if(Noun1=="cyclic"):
-                        overall_rule_result = overall_rule_result and find_cyclic_dependency(lst)
+                        cyclic_dependency_res = find_cyclic_dependency(lst)
+                        overall_rule_result = overall_rule_result and cyclic_dependency_res[0]
+                        cycles.append(cyclic_dependency_res[1])
                 else:
                     i = c.index("in")
                     if not i:
@@ -76,10 +79,14 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
 
         elif("not" in phrase and "cyclic" in phrase):
             print("not  cyclic")
-            overall_rule_result = not(find_cyclic_dependency(lst))
+            cyclic_dependency_res = find_cyclic_dependency(lst)
+            overall_rule_result = not(cyclic_dependency_res[0])
+            cycles.append(cyclic_dependency_res[1])
         elif ("cyclic" in phrase):
             print("cyclic")
-            overall_rule_result = find_cyclic_dependency(lst)
+            cyclic_dependency_res = find_cyclic_dependency(lst)
+            overall_rule_result = cyclic_dependency_res[0]
+            cycles.append(cyclic_dependency_res[1])
 
 
         elif ("start_event" in phrase and "Activity_diagram" in phrase and "should not" in phrase):
@@ -96,7 +103,7 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
             print("No match")
         print("After overall_rule_result: ", overall_rule_result)
 
-    return [overall_rule_result, prohibited_words]
+    return [overall_rule_result, prohibited_words, cycles]
     """result = checkRule1(c_names, p_names, Rule)
     if("-->" in relations.keys()):
         lst = relations["-->"]

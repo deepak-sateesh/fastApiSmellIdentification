@@ -1,5 +1,6 @@
 import re
 
+
 def class_diagram_extract_class_names_and_parameters_and_relations(plantuml_representation):
     class_names = []
     parameter_names = []
@@ -23,17 +24,6 @@ def class_diagram_extract_class_names_and_parameters_and_relations(plantuml_repr
         if c in parameter_names:
             parameter_names.remove(c)
 
-    """for p in parameter_names:
-
-        if p in class_names:
-            class_names.remove(p)"""
-    """
-    < | -- Class02
-    Class03 * -- Class04
-    Class05
-    o - - Class06
-    Class07..Class08
-    Class09 - - """
     relations = set()
     relation_lines = re.findall(r'(\w+) -\[*.*\]*-> (\w+)', plantuml_representation)
     relations.update(relation_lines)
@@ -47,7 +37,6 @@ def class_diagram_extract_class_names_and_parameters_and_relations(plantuml_repr
     for r in relations:
         all_class_names.append(r[0])
         all_class_names.append(r[1])
-
 
     relation_lines = re.findall(r'(\w+) \*-\[*.*\]*-  (\w+)', plantuml_representation)
     relations2.update(relation_lines)
@@ -88,7 +77,7 @@ def class_diagram_extract_class_names_and_parameters_and_relations(plantuml_repr
     class_names = list(set(class_names))
 
     parameter_names = list(set(parameter_names))
-    class_names = set(class_names+(all_class_names))
+    class_names = set(class_names + (all_class_names))
     return class_names, parameter_names, relation_dict
 
 
@@ -132,16 +121,12 @@ def sequence_diagram_extract_messages_information(plantuml_representation):
 
 
 def activity_diagram_extract_activity_sequence(plantuml_representation):
-
-
-
-
     # Regular expression pattern to match activity labels
 
     # Regular expression pattern to match activity labels
     activity_label_pattern = re.compile(r'(?<=:).*[\s]*.*(?=;)')
-   # r':(.*?)(?=;|@enduml)'
-    #r'(?<=:)(.*?)(?=;|@enduml)'
+    # r':(.*?)(?=;|@enduml)'
+    # r'(?<=:)(.*?)(?=;|@enduml)'
 
     # Find all activity labels in the code
     activity_labels = activity_label_pattern.findall(plantuml_representation)
@@ -157,9 +142,8 @@ def activity_diagram_extract_activity_sequence(plantuml_representation):
     # Clean up whitespace and print the extracted activity labels
 
     cleaned_activity_labels = [activity.strip() for activity in activity_labels if activity.strip()]
-    if(start_node_found):
-       cleaned_activity_labels.insert(0,"start")
-    if(stop_node_found):
+    if (start_node_found):
+        cleaned_activity_labels.insert(0, "start")
+    if (stop_node_found):
         cleaned_activity_labels.append("stop")
     return cleaned_activity_labels
-

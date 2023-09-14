@@ -1,3 +1,4 @@
+import networkx as nx
 def find_cyclic_dependency(lst):
     graph = {}
     for item in lst:
@@ -27,6 +28,24 @@ def find_cyclic_dependency(lst):
     for node in graph:
         if node not in visited:
             if dfs(node):
-                return True
+                cycles = return_cycles(lst)
+                return (True, cycles)
 
-    return False
+    return (False, ())
+
+
+def return_cycles(lst):
+
+    # Create a directed graph
+    G = nx.DiGraph()
+    for l in lst:
+        # Add edges to the graph
+        G.add_edge(l[0], l[1])
+
+
+    # Find all cycles in the graph
+    cycles = list(nx.simple_cycles(G))
+
+    # Print the cycles as list of tuples
+    cycle_tuples = [tuple(cycle) for cycle in cycles]
+    return cycle_tuples
