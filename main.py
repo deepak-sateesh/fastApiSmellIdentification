@@ -18,8 +18,10 @@ from uml_diagram_information_extractor import class_diagram_extract_class_names_
 app = FastAPI()
 IPIMAGEDIR = "Input_Images/"
 OPIMAGEDIR = "Output_Images/"
+SMELLDEFDIR = "smell_definitions/"
 app.mount("/Input_Images", StaticFiles(directory="Input_Images"), name="Input_Images")
 app.mount("/Output_Images", StaticFiles(directory="Output_Images"), name="Output_Images")
+app.mount("/smell_definitions", StaticFiles(directory="smell_definitions"), name="smell_definitions")
 
 '''@app.get("/")
 async def root():
@@ -99,6 +101,77 @@ async def read_item(request: Request, input_text: str = Form(...)):
     # print(t.split(" "))
     return templates.TemplateResponse(
         "result.html", {"request": request, "input_text": input_text, "result": result, "Output_Images": result_images}
+    )
+
+def read_file_lines(file_path):
+    try:
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+            # Remove newline characters from each line and create a list
+            lines = [line.strip() for line in lines]
+            return lines
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return []
+
+
+@app.post("/checkSmells", response_class=HTMLResponse)
+async def read_item(request: Request):
+    result = ""
+    result_images = ""
+    global class_names, parameter_names, relations, activity_sequence, messages, plant_uml_files, uploaded_file_strings
+    # Provide the path to your text file
+    file_path = f"{SMELLDEFDIR}smells.txt"  # Replace with the actual file path
+
+    # Call the function to read the file
+    lines = read_file_lines(file_path)
+    for l in lines:
+        input_text = l
+        t = input_text
+        nlp = spacy.load("en_core_web_sm")
+
+        r = ruleCheck(class_names, parameter_names, relations, activity_sequence, messages, input_text)
+        if r[0]:
+            result += "Result of rule: " + input_text + " => " + "True\n <br/>"
+        else:
+            result += "Result of rule: " + input_text + " => " + "False <br/>"
+        prohibited_words = r[1]
+        cycles = r[2]
+    # print("Result of rule: " + input_text + " => " + r)
+    output_html = ""
+    saved_images = []
+    """for file in uploaded_file_strings:
+        server = PlantUML(url='http://www.plantuml.com/plantuml/img/',
+                          basic_auth={},
+                          form_auth={}, http_opts={}, request_opts={})
+        # print(file.file.read().decode("utf-8"))
+
+        file_string = file[1]
+        diagram_type = identify_diagram_type(file_string)
+
+        s = server.processes(file_string)
+        image = Image.open(io.BytesIO(s))
+        image.save(f"{OPIMAGEDIR}{file[0]}->.png")
+
+        # saved_img=Image.open(file.filename+'->.png')
+        saved_images.append(file[0] + '->.png')"""
+    result_images = map_files_to_results(uploaded_file_strings, prohibited_words, cycles)
+
+    def parse_sentence(sentence):
+        # Process the sentence using spaCy
+        doc = nlp(sentence)
+
+        # Iterate through each token (word) in the sentence
+        for token in doc:
+            print(f"Word: {token.text}, Part of Speech: {token.pos_}")
+
+    # Example sentence to parse
+    # sentence = "The quick brown fox jumps over the lazy dog."
+    # parse_sentence(t)
+
+    # print(t.split(" "))
+    return templates.TemplateResponse(
+        "smell_result.html", {"request": request, "input_text": input_text, "result": result, "Output_Images": result_images}
     )
 
 

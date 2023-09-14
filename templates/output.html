@@ -13,12 +13,23 @@
         </div>
     {% endfor %}
     </div>
-    <br>
+    <br/>
     <div>
-        <h1>Enter the Rule:</h1>
+        <br/>
         <form action="/processRule" method="post">
-            <input type="text" name="input_text">
-            <input type="submit" value="Submit">
+            <b>Enter the Rule:</b>
+            <br/>
+            <input  style="width: 75%;" type="text" name="input_text">
+            <br/>
+            <input type="submit" value="Rule Check">
+        </form>
+    </div>
+    <br/>
+    <div>
+        <b>Check for all smells ?</b>
+        <br/>
+        <form action="/checkSmells" method="post">
+            <input type="submit"  value="Smells Check">
         </form>
     </div>
 </body>

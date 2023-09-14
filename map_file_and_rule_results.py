@@ -7,6 +7,7 @@ OPIMAGEDIR = "Output_Images/"
 
 def map_files_to_results(uploaded_file_strings, prohibited_words, cycles):
     res = []
+    #res.clear()
     local_cycles = cycles[0]
     for file in uploaded_file_strings:
             server = PlantUML(url='http://www.plantuml.com/plantuml/img/',

@@ -7,7 +7,11 @@
     <h1>The rule which is input was:</h1>
     <p>{{ input_text }}</p>
     -->
-    <h1>{{result}}</h1>
+    <h1>Output results of all the smells:</h1>
+    <h2>{{ result | safe }}</h2>
+    <br/>
+    <br/>
+    <h1>Output Images all the smells:</h1>
     <br/>
     <div class="col-12">
         {% for rs in Output_Images %}
@@ -16,7 +20,6 @@
             </div>
         {% endfor %}
     </div>
-    <br/>
     <form action="/back_button" method="get">
             <input type="submit" value="Home">
     </form>

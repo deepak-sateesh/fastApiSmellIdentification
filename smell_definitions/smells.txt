@@ -1,0 +1,2 @@
+Elements can not have cyclic dependency in Class_Diagram
+Elements_Name cannot have "And" in Class_Diagram
