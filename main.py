@@ -11,7 +11,7 @@ from plantuml import PlantUML
 from starlette.responses import RedirectResponse
 
 from map_file_and_rule_results import map_files_to_results
-from rules.rule_checker import ruleCheck
+from rules.rule_checker import ruleCheck, missing_activities
 from uml_diagram_information_extractor import class_diagram_extract_class_names_and_parameters_and_relations, \
     activity_diagram_extract_activity_sequence, sequence_diagram_extract_messages_information
 
@@ -58,7 +58,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
     global class_names, parameter_names, relations, activity_sequence, messages, plant_uml_files, uploaded_file_strings
     t = input_text
     nlp = spacy.load("en_core_web_sm")
-
+    result_images=[]
     r = ruleCheck(class_names, parameter_names, relations, activity_sequence, messages, input_text)
     if r[0]:
         result = "Result of rule: " + input_text + " => " + "True"
@@ -66,6 +66,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
         result = "Result of rule: " + input_text + " => " + "False"
     prohibited_words = r[1]
     cycles = r[2]
+    missing_activities = r[3]
     # print("Result of rule: " + input_text + " => " + r)
     output_html = ""
     saved_images = []
@@ -84,7 +85,7 @@ async def read_item(request: Request, input_text: str = Form(...)):
 
         # saved_img=Image.open(file.filename+'->.png')
         saved_images.append(file[0] + '->.png')"""
-    result_images = map_files_to_results(uploaded_file_strings, prohibited_words, cycles)
+    result_images=map_files_to_results(uploaded_file_strings, prohibited_words, cycles, missing_activities)
 
     def parse_sentence(sentence):
         # Process the sentence using spaCy
@@ -118,7 +119,7 @@ def read_file_lines(file_path):
 @app.post("/checkSmells", response_class=HTMLResponse)
 async def read_item(request: Request):
     result = ""
-    result_images = ""
+    result_images = []
     global class_names, parameter_names, relations, activity_sequence, messages, plant_uml_files, uploaded_file_strings
     # Provide the path to your text file
     file_path = f"{SMELLDEFDIR}smells.txt"  # Replace with the actual file path
@@ -155,7 +156,7 @@ async def read_item(request: Request):
 
         # saved_img=Image.open(file.filename+'->.png')
         saved_images.append(file[0] + '->.png')"""
-    result_images = map_files_to_results(uploaded_file_strings, prohibited_words, cycles)
+    result_images = map_files_to_results(uploaded_file_strings, prohibited_words, cycles, missing_activities)
 
     def parse_sentence(sentence):
         # Process the sentence using spaCy

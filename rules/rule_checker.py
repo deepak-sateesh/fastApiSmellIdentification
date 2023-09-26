@@ -7,6 +7,7 @@ overall_rule_result = True
 known_nouns = ["cyclic", "infinite_loop", "start_activity", "end_activity" ]
 prohibited_words = set()
 cycles = []
+missing_activities = set()
 def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
     global overall_rule_result, prohibited_words
     if ("-->" in relations.keys()):
@@ -37,7 +38,7 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
                     if not i:
                         i = c.index("between")
                     rule_noun=c[2:i]
-                    overall_rule_result = overall_rule_result and ruleCheck(c_names, p_names,relations," ".join(rule_noun))
+                    overall_rule_result = overall_rule_result and ruleCheck(c_names, p_names,relations ,activity_sequence , messages," ".join(rule_noun))
             if(c[1]=="donot" or c[1]=="doesn\'t"):
                 Noun1 = c[3]
                 if (Noun1 in known_nouns):
@@ -48,12 +49,12 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
                     if not i:
                         i = c.index("between")
                     rule_noun = c[3:i]
-                    overall_rule_result = not(overall_rule_result and ruleCheck(c_names, p_names,relations," ".join(rule_noun)))
+                    overall_rule_result = not(overall_rule_result and ruleCheck(c_names, p_names,relations, activity_sequence, messages," ".join(rule_noun)))
             #in between nouns and diagram check is pending
 
 
         print("next_rule:", next_rule)
-        next_rule_result = ruleCheck(c_names, p_names, relations, " ".join(next_rule))
+        next_rule_result = ruleCheck(c_names, p_names, relations, activity_sequence, messages, " ".join(next_rule))
         overall_rule_result = overall_rule_result and next_rule_result
 
         #then part
@@ -77,33 +78,52 @@ def ruleCheck(c_names, p_names,relations, activity_sequence, messages, Rule):
             overall_rule_result =not( r[0])
             prohibited_words.add(r[1])
 
-        elif("not" in phrase and "cyclic" in phrase):
+        elif("not" in phrase and "cyclic" in phrase and lst):
             print("not  cyclic")
             cyclic_dependency_res = find_cyclic_dependency(lst)
             overall_rule_result = not(cyclic_dependency_res[0])
             cycles.append(cyclic_dependency_res[1])
-        elif ("cyclic" in phrase):
+        elif ("cyclic" in phrase and lst):
             print("cyclic")
             cyclic_dependency_res = find_cyclic_dependency(lst)
             overall_rule_result = cyclic_dependency_res[0]
             cycles.append(cyclic_dependency_res[1])
 
 
+
+
         elif ("start_event" in phrase and "Activity_diagram" in phrase and "should not" in phrase):
             overall_rule_result = not (find_start_event(activity_sequence))
+            if not (find_start_event(activity_sequence)):
+                missing_activities.add('start')
+            if not (find_end_event(activity_sequence)):
+                missing_activities.add('stop')
         elif ("start_event" in phrase and "Activity_diagram" in phrase and "should " in phrase):
             overall_rule_result = find_start_event(activity_sequence)
+            if not (find_start_event(activity_sequence)):
+                missing_activities.add('start')
+            if not (find_end_event(activity_sequence)):
+                missing_activities.add('stop')
 
         elif ("end_event" in phrase and "Activity_diagram" in phrase and "should not" in phrase):
             overall_rule_result = not(find_end_event(activity_sequence))
+            if not (find_start_event(activity_sequence)):
+                missing_activities.add('start')
+            if not (find_end_event(activity_sequence)):
+                missing_activities.add('stop')
         elif ("end_event" in phrase and "Activity_diagram" in phrase and "should" in phrase):
             overall_rule_result = find_end_event(activity_sequence)
+            if not (find_start_event(activity_sequence)):
+                missing_activities.add('start')
+            if not (find_end_event(activity_sequence)):
+                missing_activities.add('stop')
 
         else:
             print("No match")
         print("After overall_rule_result: ", overall_rule_result)
 
-    return [overall_rule_result, prohibited_words, cycles]
+
+    return [overall_rule_result, prohibited_words, cycles, missing_activities]
     """result = checkRule1(c_names, p_names, Rule)
     if("-->" in relations.keys()):
         lst = relations["-->"]

@@ -5,10 +5,13 @@ import PIL.Image as Image
 OPIMAGEDIR = "Output_Images/"
 
 
-def map_files_to_results(uploaded_file_strings, prohibited_words, cycles):
+def map_files_to_results(uploaded_file_strings, prohibited_words, cycles, missing_activities):
     res = []
     #res.clear()
-    local_cycles = cycles[0]
+    local_cycles = []
+    if cycles:
+        local_cycles = cycles[0]
+
     for file in uploaded_file_strings:
             server = PlantUML(url='http://www.plantuml.com/plantuml/img/',
                               basic_auth={},
@@ -32,6 +35,12 @@ def map_files_to_results(uploaded_file_strings, prohibited_words, cycles):
                     target_class = cycle[(i + 1) % len(cycle)]
                     #file_string = file_string.replace(f'{source_class} -.*-> {target_class}', f'{source_class} -[#blue]-> {target_class}')
                     file_string = re.sub(f'{source_class}\s*-.*->\s*{target_class}', f'{source_class} -[#blue]-> {target_class}', file_string)  # class names
+
+            for m in missing_activities:
+                if (m == 'start'):
+                    file_string = re.sub(f'@startuml', '@startuml \n #yellow:; ', file_string)
+                if(m == 'stop'):
+                    file_string = re.sub(f'@enduml', '#yellow:; \n @enduml ', file_string)  # class names
 
             s = server.processes(file_string)
             image = Image.open(io.BytesIO(s))

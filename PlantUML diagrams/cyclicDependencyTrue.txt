@@ -2,7 +2,9 @@
 
 
 
-
+class StudentAndTeacher {
+    NameAndN
+    }
 
 class foo
 
@@ -23,7 +25,7 @@ bar3 : [dotted]
 bar4 : [hidden]
 
 
-bar5 : [plain]
+
 
 
 foo --> bar

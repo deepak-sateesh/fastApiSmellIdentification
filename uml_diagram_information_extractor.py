@@ -142,8 +142,12 @@ def activity_diagram_extract_activity_sequence(plantuml_representation):
     # Clean up whitespace and print the extracted activity labels
 
     cleaned_activity_labels = [activity.strip() for activity in activity_labels if activity.strip()]
-    if (start_node_found):
+    start_activity_pattern = re.compile(r'@startuml[\s]*[\n]*[\s]*start')
+    start_labels = start_activity_pattern.findall(plantuml_representation)
+    stop_activity_pattern = re.compile(r'stop[\s]*[\n]*[\s]*@enduml')
+    stop_labels = stop_activity_pattern.findall(plantuml_representation)
+    if (start_labels):
         cleaned_activity_labels.insert(0, "start")
-    if (stop_node_found):
+    if (stop_labels):
         cleaned_activity_labels.append("stop")
     return cleaned_activity_labels
