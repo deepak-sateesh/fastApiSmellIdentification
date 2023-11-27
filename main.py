@@ -11,6 +11,7 @@ from plantuml import PlantUML
 from starlette.responses import RedirectResponse
 
 from map_file_and_rule_results import map_files_to_results
+from rules.models.Rules_Prohibited_Words import nlp
 from rules.rule_checker import ruleCheck, missing_activities
 from uml_diagram_information_extractor import class_diagram_extract_class_names_and_parameters_and_relations, \
     activity_diagram_extract_activity_sequence, sequence_diagram_extract_messages_information
@@ -85,21 +86,10 @@ async def read_item(request: Request, input_text: str = Form(...)):
 
         # saved_img=Image.open(file.filename+'->.png')
         saved_images.append(file[0] + '->.png')"""
-    result_images=map_files_to_results(uploaded_file_strings, prohibited_words, cycles, missing_activities)
+    result_images = map_files_to_results(uploaded_file_strings, prohibited_words, cycles, missing_activities)
 
-    def parse_sentence(sentence):
-        # Process the sentence using spaCy
-        doc = nlp(sentence)
 
-        # Iterate through each token (word) in the sentence
-        for token in doc:
-            print(f"Word: {token.text}, Part of Speech: {token.pos_}")
 
-    # Example sentence to parse
-    # sentence = "The quick brown fox jumps over the lazy dog."
-    # parse_sentence(t)
-
-    # print(t.split(" "))
     return templates.TemplateResponse(
         "result.html", {"request": request, "input_text": input_text, "result": result, "Output_Images": result_images}
     )
@@ -158,23 +148,19 @@ async def read_item(request: Request):
         saved_images.append(file[0] + '->.png')"""
     result_images = map_files_to_results(uploaded_file_strings, prohibited_words, cycles, missing_activities)
 
-    def parse_sentence(sentence):
-        # Process the sentence using spaCy
-        doc = nlp(sentence)
 
-        # Iterate through each token (word) in the sentence
-        for token in doc:
-            print(f"Word: {token.text}, Part of Speech: {token.pos_}")
 
-    # Example sentence to parse
-    # sentence = "The quick brown fox jumps over the lazy dog."
-    # parse_sentence(t)
-
-    # print(t.split(" "))
     return templates.TemplateResponse(
         "smell_result.html", {"request": request, "input_text": input_text, "result": result, "Output_Images": result_images}
     )
 
+def parse_sentence(sentence):
+    # Process the sentence using spaCy
+    doc = nlp(sentence)
+
+    # Iterate through each token (word) in the sentence
+    for token in doc:
+        print(f"Word: {token.text}, Part of Speech: {token.pos_}")
 
 def identify_diagram_type(plantuml_code):
     # Regular expression patterns
@@ -250,9 +236,15 @@ def identify_diagram_type(plantuml_code):
 @app.post("/process_plantuml")
 async def process_plantuml(request: Request, files: List[UploadFile] = File(...)):
     global class_names, parameter_names, relations, activity_sequence, messages, plant_uml_files, uploaded_file_strings
+
     plant_uml_files = files
     class_names = []
     parameter_names = []
+    relations = {}
+    activity_sequence = []
+    messages = {}
+    uploaded_file_strings = []
+
     # Process the PlantUML files here
 
     # You can access each file using `files` list

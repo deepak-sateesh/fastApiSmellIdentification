@@ -1,52 +1,24 @@
 @startuml
 
-
-
 class StudentAndTeacher {
     NameAndN
     }
 
-class foo
-
-	
-
+class foo	
 class bar
 
-
 bar1 : [bold]
-
-
 bar2 : [dashed]
-
-
 bar3 : [dotted]
-
-
 bar4 : [hidden]
 
-
-
-
-
 foo --> bar
-
-
 foo -[bold]-> bar1
-
-
 foo -[dashed]-> bar2
-
-
 foo -[dotted]-> bar3
-
-
 foo -[hidden]-> bar4
 bar1 -[dotted]-> bar2
 bar2 -[dotted]-> foo
-
-
-
-
 
 @enduml"
 

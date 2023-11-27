@@ -14,18 +14,20 @@
     {% endfor %}
     </div>
     <br/>
-    <div>
+    <div style="float: left; clear: left; width: 75%;">
         <br/>
         <form action="/processRule" method="post">
-            <b>Enter the Rule:</b>
             <br/>
-            <input  style="width: 75%;" type="text" name="input_text">
+            <label><b>Enter the Rule:</b></label>
+            <br/>
+            <input  style="width: 100%;" type="text" name="input_text">
             <br/>
             <input type="submit" value="Rule Check">
+            <br/>
         </form>
     </div>
     <br/>
-    <div>
+    <div style="float: right; width: 20%;">
         <b>Check for all smells ?</b>
         <br/>
         <form action="/checkSmells" method="post">

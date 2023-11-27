@@ -1,0 +1,33 @@
+@startuml
+
+!define ENTITY class
+
+class User {
+  -userId: int
+  -name: String
+  +getProfile()
+  +addFriend()
+  +sendMessage()
+  +createPost()
+}
+
+class Post {
+  -postId: int
+  -content: String
+  -author: User
+  +getLikes()
+  +addComment()
+}
+
+class Comment {
+  -commentId: int
+  -text: String
+  -author: User
+  -post: Post
+}
+
+User --|> Post
+Post --|> Comment
+Comment --|> User
+
+@enduml
