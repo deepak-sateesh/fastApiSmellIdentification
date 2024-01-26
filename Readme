@@ -1,0 +1,19 @@
+Tool usage
+The tool uses Fast API framework. All the main logic is controlled by main.py. This file calls ’rule_checker.py’ or ’smell_checker.py’ files which are in rules folder. 
+These internally call the required checker functions written in files in models folder. Each rule definition is defined in this folder as a separate file. 
+All theses choices are made through User Interface(UI) whose html files reside in templates folder. Based on the user inputs the appropriate functions are called by main.py.
+When a UML diagram is uploaded into UI it goes ’uml_diagram_information_extractor.py’ which extracts all the information present in that UML diagram that can 
+be used to smell identification or rule violation identification. And once all the required rules violations are identified the result is then mapped or marked on to the
+source UML diagram by function in ’map_file_and_rule_results.py’. All the initial and the final UML diagrams
+are store in local folders like Input_images, Output_images. PlantUML diagrams folder is used to store textual representation of the UML diagrams in .txt files.
+The file ’index.html’ is the home screen of the project where it takes UML diagram in textual representation in .txt files as the input. and when submit is pressed
+it redirects to output.html where the UML diagrams are visually seen. Here the rule can be written or the smells check can be triggered. Finally after all the computation the
+result is marked on UML diagram and displayed using ’result.html’ or ’smell_result.html’.
+
+Tool Expansion
+In order to add a new rule appropriate file should be created for the new rule under models.
+The function in the file must contain the main logic of rule identification and this function must be called from main->rule_checker->"new_rule". 
+Appropriate change to the data structure and global variables has to be done in order to ensure the data transfer between these files.
+The smell checker also invokes the rule checker internally to identify the rule violation. Once the logic of identification is complete,
+the results if they have to be marked on the UML diagram , the logic has to be written in ’map_file_rule_results.py’ file and necessary parameters
+and invocations has to be taken care in order to display the results.
